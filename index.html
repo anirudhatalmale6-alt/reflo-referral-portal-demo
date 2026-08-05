@@ -206,6 +206,14 @@ const statusClass = s => {
 };
 const payerClass = p => ({"LOP":"p-lop","Insurance":"p-ins","Self Pay":"p-self"}[p]||"p-self");
 const initials = n => (n.trim().split(/\s+/).map(w=>w[0]).slice(0,2).join("")||"?").toUpperCase();
+function formatSched(v){
+  if(!v) return "";
+  const [d,t] = v.split("T"); if(!d) return v;
+  const [y,mo,da] = d.split("-"); if(!y) return v;
+  let [hh,mm] = (t||"00:00").split(":"); hh=+hh;
+  const ap = hh>=12?"PM":"AM"; let h12 = hh%12; if(h12===0) h12=12;
+  return `${mo}/${da}/${y} · ${h12}:${mm} ${ap}`;
+}
 
 const SEED = [
   {id:1, first:"Steward", last:"Joseph", dob:"07/08/1994", phone:"(713) 555-0198", email:"", doi:"07/05/2026", gender:"Male", address:"", city:"Houston", zip:"", payer:"LOP", lawyer:"Jeff Todd, Personal Injury Attorney", pid:"ID08932", orderDate:"08/05/2026", doctor:"Dr. Kiva L. Davis, DC", lop:"Pending",
@@ -213,7 +221,7 @@ const SEED = [
   {id:2, first:"David", last:"Tran", dob:"12/08/2000", phone:"(713) 220-8890", email:"", doi:"07/30/2026", gender:"Male", address:"", city:"Houston", zip:"", payer:"LOP", lawyer:"Law Office of Domingo Garcia", pid:"ID08940", orderDate:"08/05/2026", doctor:"Dr. Louie Robinson", lop:"Approved",
     procs:[{exam:"Pain Management Consultation - New Patient", sched:"", facility:"", status:"Ready to Schedule", physician:""}]},
   {id:3, first:"Aaliyah", last:"Nelson", dob:"06/10/1976", phone:"(346) 512-6677", email:"", doi:"07/22/2026", gender:"Female", address:"", city:"Katy", zip:"", payer:"LOP", lawyer:"J. Jackson Law Office", pid:"ID08951", orderDate:"08/04/2026", doctor:"Dr. Sandeep Patel", lop:"Approved",
-    procs:[{exam:"MRI Lumbar Spine", sched:"08/12/2026 1:00 PM", facility:"Main Clinic", status:"Scheduled", physician:"Dr. Raju Mantena, DO"}]},
+    procs:[{exam:"MRI Lumbar Spine", sched:"2026-08-12T13:00", facility:"Main Clinic", status:"Scheduled", physician:"Dr. Raju Mantena, DO"}]},
   {id:4, first:"Michael", last:"Brooks", dob:"10/22/1991", phone:"(281) 330-7712", email:"", doi:"07/19/2026", gender:"Male", address:"", city:"Houston", zip:"", payer:"Insurance", lawyer:"", pid:"ID08960", orderDate:"08/04/2026", doctor:"Dr. Sandeep Patel", lop:"Pending",
     procs:[{exam:"Records Review", sched:"", facility:"", status:"Pending LOP", physician:""}]}
 ];
@@ -258,7 +266,7 @@ function renderRows(){
   tb.innerHTML = list.map(p=>{
     const name=p.first+" "+p.last, s=effStatus(p), pr=p.procs[0]||{};
     return `<tr onclick="openPatient(${p.id})">
-      <td><div class="pname"><span class="pi">${initials(name)}</span><div><b>${name}</b><div class="muted" style="font-size:11.5px;margin-top:2px">${pr.exam||'—'}</div></div></div></td>
+      <td><div class="pname"><span class="pi">${initials(name)}</span><div><b>${name}</b><div class="muted" style="font-size:11.5px;margin-top:2px">${pr.exam||'—'}${pr.sched?' · '+formatSched(pr.sched):''}</div></div></div></td>
       <td class="muted">${p.dob||'—'}</td><td class="muted">${p.orderDate||'—'}</td><td class="muted">${p.phone||'—'}</td>
       <td><span class="payer ${payerClass(p.payer)}">${p.payer||'—'}</span></td>
       <td class="muted">${p.doctor||'—'}</td><td class="muted">${p.lawyer||'—'}</td>
@@ -290,7 +298,7 @@ function renderForm(isNew){
   const procRows = p.procs.map((pr,i)=>`
     <div class="proc-row">
       <div class="fld"><label>Exam</label><select data-p="${i}" data-pk="exam">${opt(EXAMS,pr.exam)}</select></div>
-      <div class="fld"><label>Schedule Date</label><input data-p="${i}" data-pk="sched" value="${pr.sched||''}" placeholder="Leave blank until scheduled"></div>
+      <div class="fld"><label>Schedule Date</label><input type="datetime-local" data-p="${i}" data-pk="sched" value="${pr.sched||''}"></div>
       <div class="fld"><label>Facility</label><select data-p="${i}" data-pk="facility"><option value="">Select…</option>${opt(FACILITIES,pr.facility)}</select></div>
       <div class="fld"><label>Status</label><select data-p="${i}" data-pk="status">${opt(STATUSES,pr.status)}</select></div>
       <div class="fld"><label>Physician</label><select data-p="${i}" data-pk="physician"><option value="">Select…</option>${opt(PHYSICIANS,pr.physician)}</select></div>
