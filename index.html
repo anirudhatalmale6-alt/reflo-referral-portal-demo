@@ -189,14 +189,21 @@
 
 <script>
 const EXAMS = ["Initial Consultation - In Office","Pain Management Consultation - New Patient","Follow-Up","Lumbar Medial Branch Block (Facet)","Trigger Point Injection","Epidural Steroid Injection","Radiofrequency Ablation","MRI Lumbar Spine","MRI Cervical Spine","MRI Left Knee","Records Review"];
-const STATUSES = ["Pending LOP","Ready to Schedule","Scheduled","In Office","Completed","No-Show","Canceled"];
+const STATUSES = ["Pending LOP","Pending LOP Injection","Pending LOP MLS","Ready to Schedule","Scheduled","Check Out","Completed","No Show","Canceled","Dropped","Follow up MRI","Reduction Received","Settled"];
 const PHYSICIANS = ["Ancy Varghese, NP","Dr. Brett H. Warfield, MD","Dr. Dwayne Dunbar, MD","Dr. Raju Mantena, DO"];
 const FACILITIES = ["Main Clinic","(add your facilities)"];
 const PAYERS = ["LOP","Insurance","Self Pay"];
 const LAWYERS = ["Jeff Todd, Personal Injury Attorney","Law Office of Domingo Garcia","Edward Law Group","Haque Law","J. Jackson Law Office"];
 const DOCTORS = ["Dr. Kiva L. Davis, DC","Dr. Louie Robinson","Dr. Sandeep Patel","Dr. Gilbert Sharon, DC","Dr. Tony Tran, MD"];
 
-const statusClass = s => ({"Pending LOP":"s-pending","Ready to Schedule":"s-ready","Scheduled":"s-sched","In Office":"s-office","Completed":"s-done","No-Show":"s-no","Canceled":"s-no"}[s]||"s-done");
+const statusClass = s => {
+  if(s.indexOf("Pending LOP")===0 || s==="Follow up MRI") return "s-pending";
+  if(s==="Ready to Schedule") return "s-ready";
+  if(s==="Scheduled") return "s-sched";
+  if(s==="Check Out") return "s-office";
+  if(s==="No Show"||s==="Canceled"||s==="Dropped") return "s-no";
+  return "s-done"; // Completed, Reduction Received, Settled
+};
 const payerClass = p => ({"LOP":"p-lop","Insurance":"p-ins","Self Pay":"p-self"}[p]||"p-self");
 const initials = n => (n.trim().split(/\s+/).map(w=>w[0]).slice(0,2).join("")||"?").toUpperCase();
 
@@ -219,11 +226,15 @@ function resetDemo(){ if(confirm("Reset the demo back to sample data?")){ DB=JSO
 // derive the "effective" status shown in the queue from LOP + procedure
 function effStatus(p){
   const pr = p.procs[0]||{};
-  if(pr.status==="Scheduled"||pr.status==="In Office"||pr.status==="Completed"||pr.status==="No-Show"||pr.status==="Canceled") return pr.status;
-  return p.lop==="Approved" ? "Ready to Schedule" : "Pending LOP";
+  const s = pr.status||"Pending LOP";
+  // While still awaiting LOP, the status stays in a Pending LOP* state.
+  // The moment LOP is Approved, a still-pending referral becomes Ready to Schedule.
+  if(s.indexOf("Pending LOP")===0) return p.lop==="Approved" ? "Ready to Schedule" : s;
+  return s;
 }
+const isPendingLOP = s => s.indexOf("Pending LOP")===0;
 const FILTERS=[["all","All"],["Pending LOP","Pending LOP"],["Ready to Schedule","Ready to Schedule"],["Scheduled","Scheduled"]];
-function counts(){ const c={all:DB.length}; DB.forEach(p=>{const s=effStatus(p); c[s]=(c[s]||0)+1;}); return c; }
+function counts(){ const c={all:DB.length,"Pending LOP":0}; DB.forEach(p=>{const s=effStatus(p); if(isPendingLOP(s)) c["Pending LOP"]++; else c[s]=(c[s]||0)+1;}); return c; }
 
 function renderChips(){
   const c=counts();
@@ -238,7 +249,8 @@ function renderRows(){
   const q=(document.getElementById("q")?.value||"").toLowerCase();
   let list = DB.filter(p=>{
     const s=effStatus(p);
-    if(filter!=="all" && s!==filter) return false;
+    if(filter==="Pending LOP"){ if(!isPendingLOP(s)) return false; }
+    else if(filter!=="all" && s!==filter) return false;
     if(q){ const hay=(p.first+" "+p.last+" "+p.phone).toLowerCase(); if(!hay.includes(q)) return false; }
     return true;
   });
