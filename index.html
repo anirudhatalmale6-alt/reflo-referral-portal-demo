@@ -219,7 +219,7 @@
 const EXAMS = ["Initial Consultation - In Office","Pain Management Consultation - New Patient","Follow-Up","Lumbar Medial Branch Block (Facet)","Trigger Point Injection","Epidural Steroid Injection","Radiofrequency Ablation","MRI Lumbar Spine","MRI Cervical Spine","MRI Left Knee","Records Review"];
 const STATUSES = ["Pending LOP","Pending LOP Injection","Pending LOP MLS","Ready to Schedule","Scheduled","Check Out","Completed","No Show","Canceled","Dropped","Follow up MRI","Reduction Received","Settled"];
 const PHYSICIANS = ["Dr. Sachin Shah, MD","Dr. Rizwan Khan, DO","Dr. Raju Mantena, DO","Princess Ezenwa, FNP","Maria Mapa Martin, APRN","Viking Physician","Ancy Varghese, FNP"];
-const FACILITIES = ["Main Clinic","(add your facilities)"];
+const FACILITIES = ["Telemedicine","Humble","Jersey Village","Pasadena","Southwest","North 45","Heights","Sugarland","Missouri City","Viking SC","Altus Westchase-SC","MLS Mo City"];
 const PAYERS = ["LOP","Insurance","Self Pay"];
 const LAWYERS = ["Jeff Todd, Personal Injury Attorney","Law Office of Domingo Garcia","Edward Law Group","Haque Law","J. Jackson Law Office"];
 const DOCTORS = ["Dr. Kiva L. Davis, DC","Dr. Louie Robinson","Dr. Sandeep Patel","Dr. Gilbert Sharon, DC","Dr. Tony Tran, MD"];
@@ -249,19 +249,19 @@ const SEED = [
   {id:2, first:"David", last:"Tran", dob:"12/08/2000", phone:"(713) 220-8890", email:"", doi:"07/30/2026", gender:"Male", address:"", city:"Houston", zip:"", payer:"LOP", lawyer:"Law Office of Domingo Garcia", pid:"ID08940", orderDate:"08/05/2026", doctor:"Dr. Louie Robinson", lop:"Approved",
     procs:[{exam:"Pain Management Consultation - New Patient", sched:"", facility:"", status:"Ready to Schedule", physician:""}]},
   {id:3, first:"Aaliyah", last:"Nelson", dob:"06/10/1976", phone:"(346) 512-6677", email:"", doi:"07/22/2026", gender:"Female", address:"", city:"Katy", zip:"", payer:"LOP", lawyer:"J. Jackson Law Office", pid:"ID08951", orderDate:"08/04/2026", doctor:"Dr. Sandeep Patel", lop:"Approved",
-    procs:[{exam:"MRI Lumbar Spine", sched:"2026-08-12T13:00", facility:"Main Clinic", status:"Scheduled", physician:"Dr. Raju Mantena, DO"}]},
+    procs:[{exam:"MRI Lumbar Spine", sched:"2026-08-12T13:00", facility:"Missouri City", status:"Scheduled", physician:"Dr. Raju Mantena, DO"}]},
   {id:4, first:"Michael", last:"Brooks", dob:"10/22/1991", phone:"(281) 330-7712", email:"", doi:"07/19/2026", gender:"Male", address:"", city:"Houston", zip:"", payer:"Insurance", lawyer:"", pid:"ID08960", orderDate:"08/04/2026", doctor:"Dr. Sandeep Patel", lop:"Pending",
     procs:[{exam:"Records Review", sched:"", facility:"", status:"Pending LOP", physician:""}]},
   {id:5, first:"Marcus", last:"Whitfield", dob:"03/12/1986", phone:"(713) 445-1180", email:"", doi:"07/15/2026", gender:"Male", address:"", city:"Houston", zip:"", payer:"LOP", lawyer:"Edward Law Group", pid:"ID08971", orderDate:"08/01/2026", doctor:"Dr. Gilbert Sharon, DC", lop:"Approved",
-    procs:[{exam:"Pain Management Consultation - New Patient", sched:"2026-08-06T09:00", facility:"Main Clinic", status:"Scheduled", physician:"Dr. Sachin Shah, MD"}]},
+    procs:[{exam:"Pain Management Consultation - New Patient", sched:"2026-08-06T09:00", facility:"Southwest", status:"Scheduled", physician:"Dr. Sachin Shah, MD"}]},
   {id:6, first:"Priya", last:"Nair", dob:"11/02/1994", phone:"(281) 220-7734", email:"", doi:"07/11/2026", gender:"Female", address:"", city:"Katy", zip:"", payer:"LOP", lawyer:"Haque Law", pid:"ID08972", orderDate:"08/01/2026", doctor:"Dr. Louie Robinson", lop:"Approved",
-    procs:[{exam:"Epidural Steroid Injection", sched:"2026-08-06T10:30", facility:"Main Clinic", status:"Scheduled", physician:"Dr. Rizwan Khan, DO"}]},
+    procs:[{exam:"Epidural Steroid Injection", sched:"2026-08-06T10:30", facility:"Heights", status:"Scheduled", physician:"Dr. Rizwan Khan, DO"}]},
   {id:7, first:"Devonte", last:"Harris", dob:"06/19/1978", phone:"(346) 771-0043", email:"", doi:"07/09/2026", gender:"Male", address:"", city:"Houston", zip:"", payer:"LOP", lawyer:"Jeff Todd, Personal Injury Attorney", pid:"ID08973", orderDate:"07/31/2026", doctor:"Dr. Kiva L. Davis, DC", lop:"Approved",
-    procs:[{exam:"Radiofrequency Ablation", sched:"2026-08-06T13:00", facility:"Main Clinic", status:"Scheduled", physician:"Dr. Sachin Shah, MD"}]}
+    procs:[{exam:"Radiofrequency Ablation", sched:"2026-08-06T13:00", facility:"Humble", status:"Scheduled", physician:"Dr. Sachin Shah, MD"}]}
 ];
 
 let DB=[], filter="all", nextId=100;
-const SEED_VER="2";
+const SEED_VER="3";
 function seed(){ DB=JSON.parse(JSON.stringify(SEED)); nextId=100; localStorage.setItem("reflo_ver",SEED_VER); save(); }
 function load(){ try{ const ver=localStorage.getItem("reflo_ver"); const s=JSON.parse(localStorage.getItem("reflo_db")); if(ver===SEED_VER && s&&s.length){DB=s; nextId=Math.max(...DB.map(p=>p.id))+1; return;} }catch(e){} seed(); }
 function save(){ localStorage.setItem("reflo_db", JSON.stringify(DB)); }
@@ -355,7 +355,7 @@ function renderDash(){
     const name=a.p.first+" "+a.p.last, s=a.pr.status||"Scheduled";
     return `<div class="apptrow" onclick="openPatient(${a.p.id})">
       <div class="atime"><b>${formatTime(a.time)||'—'}</b></div>
-      <div style="flex:1;min-width:0"><b>${name}</b><div class="muted" style="font-size:12px;margin-top:2px">${a.pr.exam}</div></div>
+      <div style="flex:1;min-width:0"><b>${name}</b><div class="muted" style="font-size:12px;margin-top:2px">${a.pr.exam}${a.pr.facility?' · '+a.pr.facility:''}</div></div>
       <div class="aprov"><span class="pi">${initials(a.physician)}</span> ${a.physician}</div>
       <span class="status ${statusClass(s)}"><span class="d"></span>${s}</span></div>`;
   }).join("") : `<div class="empty">No appointments scheduled for ${niceDate(dashState.date)}${dashState.provider?' for '+dashState.provider:''}.</div>`;
