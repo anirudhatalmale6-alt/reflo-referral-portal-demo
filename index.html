@@ -138,6 +138,30 @@
   .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
   .toast svg{width:17px;height:17px;color:#5be0a0}
   .hide{display:none!important}
+
+  /* dashboard */
+  .dashwrap{display:flex;gap:18px;align-items:flex-start}
+  .dashside{width:280px;flex-shrink:0}
+  .dashmain{flex:1;min-width:0}
+  @media(max-width:820px){.dashwrap{flex-direction:column}.dashside{width:100%}}
+  .provItem{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;cursor:pointer;
+    font-size:13.5px;font-weight:600;color:var(--slate);margin-bottom:3px}
+  .provItem:hover{background:#fafbff}
+  .provItem.on{background:var(--brand-soft);color:var(--brand)}
+  .dotmark{width:18px;height:18px;border-radius:6px;background:var(--brand);flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;color:#fff}
+  .dotmark svg{width:12px;height:12px}
+  .dotmark.off{background:#fff;border:1.5px solid #cfd7e6}
+  .pcount{background:var(--slate-soft);color:var(--slate);border-radius:20px;padding:0 8px;font-size:11.5px;font-weight:700}
+  .provItem.on .pcount{background:#fff;color:var(--brand)}
+  .apptrow{display:flex;align-items:center;gap:16px;padding:15px 18px;border-bottom:1px solid var(--line);cursor:pointer}
+  .apptrow:last-child{border-bottom:none}
+  .apptrow:hover{background:#fafbff}
+  .atime{width:90px;flex-shrink:0}
+  .aprov{width:200px;flex-shrink:0;font-size:13px;color:var(--slate);display:flex;align-items:center;gap:8px}
+  .aprov .pi{width:26px;height:26px;border-radius:50%;background:#e6ecf9;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--slate)}
+  @media(max-width:680px){.aprov{display:none}}
 </style>
 </head>
 <body>
@@ -145,8 +169,9 @@
   <div class="topbar">
     <div class="logo" onclick="go('list')"><div class="mark">R</div> RefloPortal</div>
     <nav class="nav">
-      <a id="navRef" class="active" onclick="go('list')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><circle cx="17" cy="8" r="2.6"/><path d="M16 14.2a5 5 0 0 1 4.5 5.8"/></svg> Referrals</a>
-      <a onclick="alert('Activity, Dashboard, Reports, Directories and SMS come in the next phases — this demo focuses on Phase 1: registering patients and the referrals queue.')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg> Activity</a>
+      <a id="navDash" class="active" onclick="go('dash')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg> Dashboard</a>
+      <a id="navRef" onclick="go('list')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><circle cx="17" cy="8" r="2.6"/><path d="M16 14.2a5 5 0 0 1 4.5 5.8"/></svg> Referrals</a>
+      <a onclick="alert('Activity comes in a later phase — this demo focuses on Phase 1: the Dashboard, registering patients, and the referrals queue.')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg> Activity</a>
       <a onclick="alert('Reports come in Phase 4 — with visual dashboards + a custom report builder.')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg> Reports</a>
       <a onclick="alert('Directories (Referring Doctors, Attorneys, Payers, Facilities) come in Phase 3.')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg> Directories</a>
       <a onclick="alert('SMS / messaging comes in Phase 3.')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5l8.5 6 8.5-6"/></svg> SMS</a>
@@ -155,8 +180,11 @@
     <div class="avatar">DM</div>
   </div>
 
+  <!-- DASHBOARD VIEW -->
+  <main class="main hide" id="dashView"></main>
+
   <!-- LIST VIEW -->
-  <main class="main" id="listView">
+  <main class="main hide" id="listView">
     <div class="main-head">
       <div>
         <h1>Referral Log</h1>
@@ -223,13 +251,21 @@ const SEED = [
   {id:3, first:"Aaliyah", last:"Nelson", dob:"06/10/1976", phone:"(346) 512-6677", email:"", doi:"07/22/2026", gender:"Female", address:"", city:"Katy", zip:"", payer:"LOP", lawyer:"J. Jackson Law Office", pid:"ID08951", orderDate:"08/04/2026", doctor:"Dr. Sandeep Patel", lop:"Approved",
     procs:[{exam:"MRI Lumbar Spine", sched:"2026-08-12T13:00", facility:"Main Clinic", status:"Scheduled", physician:"Dr. Raju Mantena, DO"}]},
   {id:4, first:"Michael", last:"Brooks", dob:"10/22/1991", phone:"(281) 330-7712", email:"", doi:"07/19/2026", gender:"Male", address:"", city:"Houston", zip:"", payer:"Insurance", lawyer:"", pid:"ID08960", orderDate:"08/04/2026", doctor:"Dr. Sandeep Patel", lop:"Pending",
-    procs:[{exam:"Records Review", sched:"", facility:"", status:"Pending LOP", physician:""}]}
+    procs:[{exam:"Records Review", sched:"", facility:"", status:"Pending LOP", physician:""}]},
+  {id:5, first:"Marcus", last:"Whitfield", dob:"03/12/1986", phone:"(713) 445-1180", email:"", doi:"07/15/2026", gender:"Male", address:"", city:"Houston", zip:"", payer:"LOP", lawyer:"Edward Law Group", pid:"ID08971", orderDate:"08/01/2026", doctor:"Dr. Gilbert Sharon, DC", lop:"Approved",
+    procs:[{exam:"Pain Management Consultation - New Patient", sched:"2026-08-06T09:00", facility:"Main Clinic", status:"Scheduled", physician:"Dr. Sachin Shah, MD"}]},
+  {id:6, first:"Priya", last:"Nair", dob:"11/02/1994", phone:"(281) 220-7734", email:"", doi:"07/11/2026", gender:"Female", address:"", city:"Katy", zip:"", payer:"LOP", lawyer:"Haque Law", pid:"ID08972", orderDate:"08/01/2026", doctor:"Dr. Louie Robinson", lop:"Approved",
+    procs:[{exam:"Epidural Steroid Injection", sched:"2026-08-06T10:30", facility:"Main Clinic", status:"Scheduled", physician:"Dr. Rizwan Khan, DO"}]},
+  {id:7, first:"Devonte", last:"Harris", dob:"06/19/1978", phone:"(346) 771-0043", email:"", doi:"07/09/2026", gender:"Male", address:"", city:"Houston", zip:"", payer:"LOP", lawyer:"Jeff Todd, Personal Injury Attorney", pid:"ID08973", orderDate:"07/31/2026", doctor:"Dr. Kiva L. Davis, DC", lop:"Approved",
+    procs:[{exam:"Radiofrequency Ablation", sched:"2026-08-06T13:00", facility:"Main Clinic", status:"Scheduled", physician:"Dr. Sachin Shah, MD"}]}
 ];
 
 let DB=[], filter="all", nextId=100;
-function load(){ try{const s=JSON.parse(localStorage.getItem("reflo_db")); if(s&&s.length){DB=s; nextId=Math.max(...DB.map(p=>p.id))+1; return;}}catch(e){} DB=JSON.parse(JSON.stringify(SEED)); nextId=100; save(); }
+const SEED_VER="2";
+function seed(){ DB=JSON.parse(JSON.stringify(SEED)); nextId=100; localStorage.setItem("reflo_ver",SEED_VER); save(); }
+function load(){ try{ const ver=localStorage.getItem("reflo_ver"); const s=JSON.parse(localStorage.getItem("reflo_db")); if(ver===SEED_VER && s&&s.length){DB=s; nextId=Math.max(...DB.map(p=>p.id))+1; return;} }catch(e){} seed(); }
 function save(){ localStorage.setItem("reflo_db", JSON.stringify(DB)); }
-function resetDemo(){ if(confirm("Reset the demo back to sample data?")){ DB=JSON.parse(JSON.stringify(SEED)); nextId=100; save(); go('list'); toast("Demo reset"); } }
+function resetDemo(){ if(confirm("Reset the demo back to sample data?")){ seed(); go('dash'); toast("Demo reset"); } }
 
 // derive the "effective" status shown in the queue from LOP + procedure
 function effStatus(p){
@@ -279,10 +315,70 @@ function renderRows(){
 }
 
 function go(view){
+  document.getElementById("dashView").classList.toggle("hide", view!=="dash");
   document.getElementById("listView").classList.toggle("hide", view!=="list");
-  document.getElementById("formView").classList.toggle("hide", view==="list");
-  document.getElementById("navRef").classList.toggle("active", true);
-  if(view==="list"){ renderChips(); renderRows(); window.scrollTo(0,0); }
+  document.getElementById("formView").classList.toggle("hide", view!=="form");
+  document.getElementById("navDash").classList.toggle("active", view==="dash");
+  document.getElementById("navRef").classList.toggle("active", view!=="dash");
+  if(view==="dash"){ renderDash(); }
+  if(view==="list"){ renderChips(); renderRows(); }
+  window.scrollTo(0,0);
+}
+
+/* ===== DASHBOARD ===== */
+const dashState = {date:"2026-08-06", provider:null};
+function formatTime(t){ if(!t) return ""; let [hh,mm]=t.split(":"); hh=+hh; const ap=hh>=12?"PM":"AM"; let h=hh%12; if(h===0)h=12; return `${h}:${mm} ${ap}`; }
+function niceDate(d){ const [y,mo,da]=d.split("-"); const days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]; const mons=["January","February","March","April","May","June","July","August","September","October","November","December"];
+  // day-of-week without Date(): Zeller-ish via known anchor is overkill; just show month/day/year nicely
+  return `${mons[(+mo)-1]} ${(+da)}, ${y}`; }
+function dayAppts(dateStr){
+  const out=[];
+  DB.forEach(p=>p.procs.forEach(pr=>{ if(pr.sched && pr.sched.split("T")[0]===dateStr) out.push({p, pr, time:(pr.sched.split("T")[1]||""), physician:pr.physician||"Unassigned"}); }));
+  out.sort((a,b)=>a.time.localeCompare(b.time));
+  return out;
+}
+function setProv(name){ dashState.provider = dashState.provider===name?null:name; renderDash(); }
+
+function renderDash(){
+  const appts = dayAppts(dashState.date);
+  const provs = [...new Set(appts.map(a=>a.physician))].sort();
+  const shown = dashState.provider ? appts.filter(a=>a.physician===dashState.provider) : appts;
+  const provItems = provs.map(pr=>{
+    const n = appts.filter(a=>a.physician===pr).length;
+    const on = dashState.provider===pr;
+    return `<div class="provItem ${on?'on':''}" onclick="setProv('${pr.replace(/'/g,"\\'")}')">
+      <span class="dotmark ${on?'':'off'}">${on?'<svg viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'3\'><path d=\'M20 6 9 17l-5-5\'/></svg>':''}</span>
+      <span style="flex:1">${pr}</span><span class="pcount">${n}</span></div>`;
+  }).join("") || `<div class="muted" style="font-size:13px;padding:6px 2px">No providers scheduled this day.</div>`;
+
+  const list = shown.length ? shown.map(a=>{
+    const name=a.p.first+" "+a.p.last, s=a.pr.status||"Scheduled";
+    return `<div class="apptrow" onclick="openPatient(${a.p.id})">
+      <div class="atime"><b>${formatTime(a.time)||'—'}</b></div>
+      <div style="flex:1;min-width:0"><b>${name}</b><div class="muted" style="font-size:12px;margin-top:2px">${a.pr.exam}</div></div>
+      <div class="aprov"><span class="pi">${initials(a.physician)}</span> ${a.physician}</div>
+      <span class="status ${statusClass(s)}"><span class="d"></span>${s}</span></div>`;
+  }).join("") : `<div class="empty">No appointments scheduled for ${niceDate(dashState.date)}${dashState.provider?' for '+dashState.provider:''}.</div>`;
+
+  document.getElementById("dashView").innerHTML = `
+    <div class="main-head">
+      <div><h1>Today's Schedule</h1><div class="sub">${niceDate(dashState.date)}${dashState.provider?' · '+dashState.provider:' · all providers'}</div></div>
+      <button class="btn" onclick="newReferral()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg> New Referral</button>
+    </div>
+    <div class="dashwrap">
+      <aside class="cardbox dashside">
+        <label style="display:block;font-size:11.5px;color:var(--muted);font-weight:600;margin-bottom:7px">Date</label>
+        <input type="date" value="${dashState.date}" onchange="dashState.date=this.value;dashState.provider=null;renderDash()" style="width:100%;height:40px;border:1px solid var(--line);border-radius:9px;padding:0 12px;font-size:13.5px;background:#fbfcfe;margin-bottom:18px">
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);font-weight:700;margin-bottom:12px">Providers today</div>
+        <div class="provItem ${!dashState.provider?'on':''}" onclick="dashState.provider=null;renderDash()">
+          <span class="dotmark ${!dashState.provider?'':'off'}">${!dashState.provider?'<svg viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'3\'><path d=\'M20 6 9 17l-5-5\'/></svg>':''}</span>
+          <span style="flex:1">All providers</span><span class="pcount">${appts.length}</span></div>
+        ${provItems}
+      </aside>
+      <div class="dashmain">
+        <div class="cardbox" style="padding:0;overflow:hidden">${list}</div>
+      </div>
+    </div>`;
 }
 
 function opt(arr,val){ return arr.map(o=>`<option ${o===val?'selected':''}>${o}</option>`).join(""); }
@@ -393,7 +489,7 @@ function saveForm(){
 let tT;
 function toast(msg){ const t=document.getElementById("toast"); document.getElementById("toastMsg").textContent=msg; t.classList.add("show"); clearTimeout(tT); tT=setTimeout(()=>t.classList.remove("show"),2600); }
 
-load(); go('list');
+load(); go('dash');
 </script>
 </body>
 </html>
