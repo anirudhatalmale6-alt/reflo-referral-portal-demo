@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RefloPortal — Referral Portal Demo</title>
+<style>
+  :root{
+    --bg:#f4f6fb; --card:#ffffff; --ink:#1a2233; --muted:#7683a0;
+    --line:#e7ebf3; --brand:#2f6bff; --brand-soft:#eaf1ff;
+    --green:#16a97d; --green-soft:#e5f6ef; --amber:#e08a00; --amber-soft:#fdf1dc;
+    --red:#e0455e; --red-soft:#fce8ec; --slate:#5b6b8c; --slate-soft:#eef1f7;
+    --purple:#6b57d6; --purple-soft:#eeeafb;
+    --shadow:0 1px 2px rgba(24,39,75,.05),0 8px 24px rgba(24,39,75,.06);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;font-size:14px}
+  .app{display:flex;flex-direction:column;min-height:100vh}
+  button{font-family:inherit}
+
+  .topbar{height:60px;background:var(--card);border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:22px;padding:0 22px;position:sticky;top:0;z-index:20}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;letter-spacing:-.2px;cursor:pointer}
+  .logo .mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#2f6bff,#5b8bff);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px}
+  .nav{display:flex;align-items:center;gap:4px;margin-left:8px}
+  .nav a{height:38px;border-radius:9px;display:flex;align-items:center;gap:8px;padding:0 12px;
+    color:var(--muted);text-decoration:none;font-weight:600;font-size:13px;cursor:pointer}
+  .nav a svg{width:18px;height:18px}
+  .nav a.active{background:var(--brand-soft);color:var(--brand)}
+  .demoTag{margin-left:auto;font-size:11px;font-weight:700;color:var(--amber);background:var(--amber-soft);
+    padding:5px 11px;border-radius:20px}
+  .avatar{width:38px;height:38px;border-radius:50%;background:#dfe6f5;
+    display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--slate);font-size:13px}
+
+  .main{flex:1;padding:24px 28px;max-width:1500px;width:100%;margin:0 auto}
+  .main-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:18px;gap:16px;flex-wrap:wrap}
+  .main-head h1{margin:0;font-size:22px;letter-spacing:-.4px}
+  .main-head .sub{color:var(--muted);margin-top:5px;font-size:13.5px}
+  .btn{height:40px;border:none;border-radius:10px;background:var(--brand);color:#fff;font-weight:600;
+    font-size:13.5px;padding:0 18px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+    box-shadow:0 4px 12px rgba(47,107,255,.28)}
+  .btn svg{width:16px;height:16px}
+  .btn.ghost{background:var(--card);color:var(--slate);border:1px solid var(--line);box-shadow:none}
+
+  .toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+  .chip{height:36px;border:1px solid var(--line);background:var(--card);border-radius:9px;
+    padding:0 14px;display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--slate);cursor:pointer}
+  .chip.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .chip .c{background:var(--slate-soft);color:var(--slate);border-radius:20px;padding:0 7px;font-size:11.5px}
+  .chip.active .c{background:rgba(255,255,255,.25);color:#fff}
+  .search{position:relative;margin-left:auto}
+  .search input{height:36px;width:240px;border:1px solid var(--line);border-radius:9px;padding:0 12px 0 34px;
+    font-size:13px;background:var(--card);color:var(--ink)}
+  .search svg{position:absolute;left:11px;top:9px;width:17px;height:17px;color:var(--muted)}
+
+  .tablewrap{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:auto}
+  table{width:100%;border-collapse:collapse;min-width:900px}
+  thead th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);
+    font-weight:700;padding:13px 16px;background:#fbfcfe;border-bottom:1px solid var(--line)}
+  tbody td{padding:13px 16px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr{cursor:pointer}
+  tbody tr:hover{background:#fafbff}
+  .pname{display:flex;align-items:center;gap:11px}
+  .pname .pi{width:32px;height:32px;border-radius:50%;background:#e6ecf9;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--slate)}
+  .pname b{font-weight:700;letter-spacing:-.1px}
+  .muted{color:var(--muted)}
+  .payer{display:inline-block;padding:3px 10px;border-radius:6px;font-size:11.5px;font-weight:700}
+  .p-lop{background:var(--purple-soft);color:var(--purple)}
+  .p-ins{background:var(--brand-soft);color:var(--brand)}
+  .p-self{background:var(--slate-soft);color:var(--slate)}
+  .status{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:8px;
+    font-size:11.5px;font-weight:700;white-space:nowrap}
+  .status .d{width:7px;height:7px;border-radius:50%}
+  .s-pending{background:var(--amber-soft);color:var(--amber)} .s-pending .d{background:var(--amber)}
+  .s-ready{background:var(--green-soft);color:var(--green)} .s-ready .d{background:var(--green)}
+  .s-sched{background:var(--brand-soft);color:var(--brand)} .s-sched .d{background:var(--brand)}
+  .s-office{background:#eae6fb;color:var(--purple)} .s-office .d{background:var(--purple)}
+  .s-done{background:var(--slate-soft);color:var(--slate)} .s-done .d{background:var(--slate)}
+  .s-no{background:var(--red-soft);color:var(--red)} .s-no .d{background:var(--red)}
+  .empty{padding:50px;text-align:center;color:var(--muted)}
+
+  /* form view */
+  .phead{background:linear-gradient(120deg,#2f6bff,#5b8bff);color:#fff;padding:16px 22px;border-radius:14px;
+    display:flex;align-items:center;gap:16px;margin-bottom:18px}
+  .phead .pav{width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,.2);
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px}
+  .phead h2{margin:0;font-size:19px;letter-spacing:-.3px}
+  .phead .pm{opacity:.92;font-size:12.5px;margin-top:3px;display:flex;gap:14px;flex-wrap:wrap}
+  .phead .hbtns{margin-left:auto;display:flex;gap:9px}
+  .hbtn{height:38px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;
+    border-radius:9px;padding:0 15px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:7px;cursor:pointer}
+  .hbtn.solid{background:#fff;color:var(--brand);border-color:#fff}
+
+  .cardbox{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);
+    padding:20px 22px;margin-bottom:18px}
+  .sec-h{display:flex;align-items:center;gap:9px;margin:0 0 18px;font-size:14px;font-weight:700}
+  .sec-h .i{width:26px;height:26px;border-radius:8px;background:var(--brand-soft);color:var(--brand);
+    display:flex;align-items:center;justify-content:center}
+  .sec-h .i svg{width:15px;height:15px}
+  .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px}
+  .grid.g4{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:1100px){.grid,.grid.g4{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:680px){.grid,.grid.g4{grid-template-columns:repeat(2,1fr)}}
+  .fld{min-width:0}
+  .fld label{display:block;font-size:11.5px;color:var(--muted);font-weight:600;margin-bottom:7px}
+  .fld label .req{color:var(--red)}
+  .fld input,.fld select{width:100%;height:40px;border:1px solid var(--line);border-radius:9px;padding:0 12px;
+    font-size:13.5px;background:#fbfcfe;color:var(--ink);-webkit-appearance:none;appearance:none}
+  .fld input:focus,.fld select:focus{outline:none;border-color:var(--brand);background:#fff}
+  select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%237683a0' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center}
+  .lbl-row{display:flex;align-items:center;justify-content:space-between}
+  .lbl-row a{font-size:11px;font-weight:700;color:var(--brand);text-decoration:none;cursor:pointer}
+
+  .proc-h{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .proc-h h3{margin:0;font-size:15px;font-weight:700}
+  .mini{height:34px;border-radius:8px;padding:0 12px;font-size:12.5px;font-weight:600;display:inline-flex;
+    align-items:center;gap:6px;cursor:pointer;border:none}
+  .mini svg{width:14px;height:14px}
+  .mini.blue{background:var(--brand);color:#fff}
+  .mini.ghost{background:var(--slate-soft);color:var(--slate)}
+  .proc-row{display:grid;grid-template-columns:1.6fr 1.3fr 1fr 1.2fr 1fr .9fr auto;gap:12px;align-items:end;
+    padding:14px;border:1px solid var(--line);border-radius:12px;background:#fbfcfe;margin-bottom:12px}
+  @media(max-width:1100px){.proc-row{grid-template-columns:repeat(2,1fr)}}
+  .rm{width:38px;height:40px;border-radius:9px;background:var(--red-soft);color:var(--red);border:none;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px}
+  .footbar{display:flex;gap:10px;justify-content:flex-end;padding:4px 0 20px}
+  .fbtn{height:42px;border-radius:10px;padding:0 22px;font-size:13.5px;font-weight:600;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--slate)}
+  .fbtn.pri{background:var(--brand);color:#fff;border-color:var(--brand);box-shadow:0 4px 12px rgba(47,107,255,.28)}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);
+    color:#fff;padding:13px 22px;border-radius:11px;font-size:13.5px;font-weight:600;box-shadow:0 12px 30px rgba(0,0,0,.25);
+    opacity:0;transition:.35s;z-index:50;display:flex;align-items:center;gap:9px}
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+  .toast svg{width:17px;height:17px;color:#5be0a0}
+  .hide{display:none!important}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="logo" onclick="go('list')"><div class="mark">R</div> RefloPortal</div>
+    <nav class="nav">
+      <a id="navRef" class="active" onclick="go('list')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><circle cx="17" cy="8" r="2.6"/><path d="M16 14.2a5 5 0 0 1 4.5 5.8"/></svg> Referrals</a>
+      <a onclick="alert('Activity, Dashboard, Reports, Directories and SMS come in the next phases — this demo focuses on Phase 1: registering patients and the referrals queue.')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg> Activity</a>
+      <a onclick="alert('Reports come in Phase 4 — with visual dashboards + a custom report builder.')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg> Reports</a>
+      <a onclick="alert('Directories (Referring Doctors, Attorneys, Payers, Facilities) come in Phase 3.')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg> Directories</a>
+      <a onclick="alert('SMS / messaging comes in Phase 3.')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5l8.5 6 8.5-6"/></svg> SMS</a>
+    </nav>
+    <span class="demoTag">PHASE 1 DEMO</span>
+    <div class="avatar">DM</div>
+  </div>
+
+  <!-- LIST VIEW -->
+  <main class="main" id="listView">
+    <div class="main-head">
+      <div>
+        <h1>Referral Log</h1>
+        <div class="sub" id="listSub">All incoming referrals</div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn ghost" onclick="resetDemo()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg> Reset Demo</button>
+        <button class="btn" onclick="newReferral()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg> New Referral</button>
+      </div>
+    </div>
+
+    <div class="toolbar" id="chips"></div>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>Patient Name</th><th>DOB</th><th>Order Date</th><th>Phone</th><th>Payer</th><th>Doctor</th><th>Lawyer</th><th>LOP</th><th>Status</th></tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="empty hide" id="emptyMsg">No referrals in this view. Click "New Referral" to add one.</div>
+    </div>
+  </main>
+
+  <!-- FORM VIEW -->
+  <main class="main hide" id="formView"></main>
+</div>
+
+<div class="toast" id="toast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span id="toastMsg"></span></div>
+
+<script>
+const EXAMS = ["Initial Consultation - In Office","Pain Management Consultation - New Patient","Follow-Up","Lumbar Medial Branch Block (Facet)","Trigger Point Injection","Epidural Steroid Injection","Radiofrequency Ablation","MRI Lumbar Spine","MRI Cervical Spine","MRI Left Knee","Records Review"];
+const STATUSES = ["Pending LOP","Ready to Schedule","Scheduled","In Office","Completed","No-Show","Canceled"];
+const PHYSICIANS = ["Ancy Varghese, NP","Dr. Brett H. Warfield, MD","Dr. Dwayne Dunbar, MD","Dr. Raju Mantena, DO"];
+const FACILITIES = ["Main Clinic","(add your facilities)"];
+const PAYERS = ["LOP","Insurance","Self Pay"];
+const LAWYERS = ["Jeff Todd, Personal Injury Attorney","Law Office of Domingo Garcia","Edward Law Group","Haque Law","J. Jackson Law Office"];
+const DOCTORS = ["Dr. Kiva L. Davis, DC","Dr. Louie Robinson","Dr. Sandeep Patel","Dr. Gilbert Sharon, DC","Dr. Tony Tran, MD"];
+
+const statusClass = s => ({"Pending LOP":"s-pending","Ready to Schedule":"s-ready","Scheduled":"s-sched","In Office":"s-office","Completed":"s-done","No-Show":"s-no","Canceled":"s-no"}[s]||"s-done");
+const payerClass = p => ({"LOP":"p-lop","Insurance":"p-ins","Self Pay":"p-self"}[p]||"p-self");
+const initials = n => (n.trim().split(/\s+/).map(w=>w[0]).slice(0,2).join("")||"?").toUpperCase();
+
+const SEED = [
+  {id:1, first:"Steward", last:"Joseph", dob:"07/08/1994", phone:"(713) 555-0198", email:"", doi:"07/05/2026", gender:"Male", address:"", city:"Houston", zip:"", payer:"LOP", lawyer:"Jeff Todd, Personal Injury Attorney", pid:"ID08932", orderDate:"08/05/2026", doctor:"Dr. Kiva L. Davis, DC", lop:"Pending",
+    procs:[{exam:"Initial Consultation - In Office", sched:"", facility:"", status:"Pending LOP", physician:""}]},
+  {id:2, first:"David", last:"Tran", dob:"12/08/2000", phone:"(713) 220-8890", email:"", doi:"07/30/2026", gender:"Male", address:"", city:"Houston", zip:"", payer:"LOP", lawyer:"Law Office of Domingo Garcia", pid:"ID08940", orderDate:"08/05/2026", doctor:"Dr. Louie Robinson", lop:"Approved",
+    procs:[{exam:"Pain Management Consultation - New Patient", sched:"", facility:"", status:"Ready to Schedule", physician:""}]},
+  {id:3, first:"Aaliyah", last:"Nelson", dob:"06/10/1976", phone:"(346) 512-6677", email:"", doi:"07/22/2026", gender:"Female", address:"", city:"Katy", zip:"", payer:"LOP", lawyer:"J. Jackson Law Office", pid:"ID08951", orderDate:"08/04/2026", doctor:"Dr. Sandeep Patel", lop:"Approved",
+    procs:[{exam:"MRI Lumbar Spine", sched:"08/12/2026 1:00 PM", facility:"Main Clinic", status:"Scheduled", physician:"Dr. Raju Mantena, DO"}]},
+  {id:4, first:"Michael", last:"Brooks", dob:"10/22/1991", phone:"(281) 330-7712", email:"", doi:"07/19/2026", gender:"Male", address:"", city:"Houston", zip:"", payer:"Insurance", lawyer:"", pid:"ID08960", orderDate:"08/04/2026", doctor:"Dr. Sandeep Patel", lop:"Pending",
+    procs:[{exam:"Records Review", sched:"", facility:"", status:"Pending LOP", physician:""}]}
+];
+
+let DB=[], filter="all", nextId=100;
+function load(){ try{const s=JSON.parse(localStorage.getItem("reflo_db")); if(s&&s.length){DB=s; nextId=Math.max(...DB.map(p=>p.id))+1; return;}}catch(e){} DB=JSON.parse(JSON.stringify(SEED)); nextId=100; save(); }
+function save(){ localStorage.setItem("reflo_db", JSON.stringify(DB)); }
+function resetDemo(){ if(confirm("Reset the demo back to sample data?")){ DB=JSON.parse(JSON.stringify(SEED)); nextId=100; save(); go('list'); toast("Demo reset"); } }
+
+// derive the "effective" status shown in the queue from LOP + procedure
+function effStatus(p){
+  const pr = p.procs[0]||{};
+  if(pr.status==="Scheduled"||pr.status==="In Office"||pr.status==="Completed"||pr.status==="No-Show"||pr.status==="Canceled") return pr.status;
+  return p.lop==="Approved" ? "Ready to Schedule" : "Pending LOP";
+}
+const FILTERS=[["all","All"],["Pending LOP","Pending LOP"],["Ready to Schedule","Ready to Schedule"],["Scheduled","Scheduled"]];
+function counts(){ const c={all:DB.length}; DB.forEach(p=>{const s=effStatus(p); c[s]=(c[s]||0)+1;}); return c; }
+
+function renderChips(){
+  const c=counts();
+  document.getElementById("chips").innerHTML = FILTERS.map(([k,label])=>{
+    const n = k==="all"?c.all:(c[k]||0);
+    return `<span class="chip ${filter===k?'active':''}" onclick="setFilter('${k}')">${label} <span class="c">${n}</span></span>`;
+  }).join("") + `<div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><input id="q" placeholder="Search name / phone…" oninput="renderRows()"></div>`;
+}
+function setFilter(k){ filter=k; renderChips(); renderRows(); }
+
+function renderRows(){
+  const q=(document.getElementById("q")?.value||"").toLowerCase();
+  let list = DB.filter(p=>{
+    const s=effStatus(p);
+    if(filter!=="all" && s!==filter) return false;
+    if(q){ const hay=(p.first+" "+p.last+" "+p.phone).toLowerCase(); if(!hay.includes(q)) return false; }
+    return true;
+  });
+  const tb=document.getElementById("rows");
+  tb.innerHTML = list.map(p=>{
+    const name=p.first+" "+p.last, s=effStatus(p), pr=p.procs[0]||{};
+    return `<tr onclick="openPatient(${p.id})">
+      <td><div class="pname"><span class="pi">${initials(name)}</span><div><b>${name}</b><div class="muted" style="font-size:11.5px;margin-top:2px">${pr.exam||'—'}</div></div></div></td>
+      <td class="muted">${p.dob||'—'}</td><td class="muted">${p.orderDate||'—'}</td><td class="muted">${p.phone||'—'}</td>
+      <td><span class="payer ${payerClass(p.payer)}">${p.payer||'—'}</span></td>
+      <td class="muted">${p.doctor||'—'}</td><td class="muted">${p.lawyer||'—'}</td>
+      <td><span class="status ${p.lop==='Approved'?'s-ready':'s-pending'}"><span class="d"></span>${p.lop}</span></td>
+      <td><span class="status ${statusClass(s)}"><span class="d"></span>${s}</span></td>
+    </tr>`;
+  }).join("");
+  document.getElementById("emptyMsg").classList.toggle("hide", list.length>0);
+  document.getElementById("listSub").textContent = `${list.length} referral${list.length===1?'':'s'} shown`;
+}
+
+function go(view){
+  document.getElementById("listView").classList.toggle("hide", view!=="list");
+  document.getElementById("formView").classList.toggle("hide", view==="list");
+  document.getElementById("navRef").classList.toggle("active", true);
+  if(view==="list"){ renderChips(); renderRows(); window.scrollTo(0,0); }
+}
+
+function opt(arr,val){ return arr.map(o=>`<option ${o===val?'selected':''}>${o}</option>`).join(""); }
+function field(label,val,req){ return `<div class="fld"><label>${label}${req?' <span class="req">*</span>':''}</label><input data-k="${label}" value="${val||''}"></div>`; }
+
+let editing=null;
+function newReferral(){ editing={id:0, first:"",last:"",dob:"",phone:"",email:"",doi:"",gender:"",address:"",city:"",zip:"",payer:"LOP",lawyer:"",pid:"ID"+(10000+Math.floor(nextId)),orderDate:todayStr(),doctor:"",lop:"Pending",procs:[{exam:EXAMS[0],sched:"",facility:"",status:"Pending LOP",physician:""}]}; renderForm(true); }
+function openPatient(id){ editing=JSON.parse(JSON.stringify(DB.find(p=>p.id===id))); renderForm(false); }
+function todayStr(){ return "08/05/2026"; }
+
+function renderForm(isNew){
+  const p=editing, name=(p.first||p.last)?(p.first+" "+p.last).trim():"New Referral";
+  const procRows = p.procs.map((pr,i)=>`
+    <div class="proc-row">
+      <div class="fld"><label>Exam</label><select data-p="${i}" data-pk="exam">${opt(EXAMS,pr.exam)}</select></div>
+      <div class="fld"><label>Schedule Date</label><input data-p="${i}" data-pk="sched" value="${pr.sched||''}" placeholder="Leave blank until scheduled"></div>
+      <div class="fld"><label>Facility</label><select data-p="${i}" data-pk="facility"><option value="">Select…</option>${opt(FACILITIES,pr.facility)}</select></div>
+      <div class="fld"><label>Status</label><select data-p="${i}" data-pk="status">${opt(STATUSES,pr.status)}</select></div>
+      <div class="fld"><label>Physician</label><select data-p="${i}" data-pk="physician"><option value="">Select…</option>${opt(PHYSICIANS,pr.physician)}</select></div>
+      <div class="fld"><label>LOP</label><select data-p="${i}" data-pk="lopP"><option ${pr.lopP==="Pending"||!pr.lopP?'selected':''}>Pending</option><option ${pr.lopP==="Approved"?'selected':''}>Approved</option></select></div>
+      ${p.procs.length>1?`<button class="rm" onclick="delProc(${i})">&minus;</button>`:`<span></span>`}
+    </div>`).join("");
+
+  document.getElementById("formView").innerHTML = `
+    <div class="phead">
+      <div class="pav">${initials(name)}</div>
+      <div><h2 id="hName">${name}</h2><div class="pm"><span>DOB ${p.dob||'—'}</span><span>Patient ID: ${p.pid}</span><span>Payer: ${p.payer}</span></div></div>
+      <div class="hbtns">
+        <button class="hbtn" onclick="toast('Send SMS — wired up in Phase 3')">Send SMS</button>
+        <button class="hbtn solid" onclick="saveForm()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg> Save</button>
+      </div>
+    </div>
+
+    <div class="cardbox">
+      <div class="sec-h"><span class="i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg></span> Patient Information</div>
+      <div class="grid" style="margin-bottom:16px">
+        ${field("First Name",p.first,true)}${field("Middle Name","")}${field("Last Name",p.last,true)}
+        ${field("Date of Birth",p.dob,true)}${field("Patient Phone",p.phone)}${field("Alt. Number","")}
+      </div>
+      <div class="grid">
+        ${field("Patient Email",p.email)}${field("DOI / DOL",p.doi)}
+        <div class="fld"><label>Gender</label><select data-k="Gender"><option value="">Select…</option>${opt(["Male","Female","Other"],p.gender)}</select></div>
+        ${field("Address",p.address)}
+        <div class="fld"><label>City</label><input data-k="City" value="${p.city||''}"></div>
+        ${field("Zip",p.zip)}
+      </div>
+    </div>
+
+    <div class="cardbox">
+      <div class="sec-h"><span class="i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v6H4zM4 14h16v6H4z"/></svg></span> Referral &amp; Payer</div>
+      <div class="grid g4">
+        <div class="fld"><label>Payer</label><select data-k="Payer">${opt(PAYERS,p.payer)}</select></div>
+        <div class="fld"><div class="lbl-row"><label>Lawyer</label><a onclick="toast('Add New Lawyer — full directory in Phase 3')">+ Add New</a></div><select data-k="Lawyer"><option value="">Select…</option>${opt(LAWYERS,p.lawyer)}</select></div>
+        <div class="fld"><label>Patient ID</label><input data-k="Patient ID" value="${p.pid}"></div>
+        <div class="fld"><label>Order Enter Date</label><input data-k="Order Enter Date" value="${p.orderDate}"></div>
+      </div>
+      <div class="grid g4" style="margin-top:16px">
+        <div class="fld"><label>Referring Doctor</label><select data-k="Referring Doctor"><option value="">Select…</option>${opt(DOCTORS,p.doctor)}</select></div>
+        <div class="fld"><label>LOP Status</label><select data-k="LOP"><option ${p.lop==="Pending"?'selected':''}>Pending</option><option ${p.lop==="Approved"?'selected':''}>Approved</option></select></div>
+      </div>
+    </div>
+
+    <div class="cardbox">
+      <div class="proc-h">
+        <h3>Procedures</h3>
+        <button class="mini blue" onclick="addProc()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg> Add Procedure</button>
+        <button class="mini ghost" onclick="toast('Send SMS — wired up in Phase 3')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg> Send SMS</button>
+      </div>
+      ${procRows}
+      <div class="muted" style="font-size:12px;margin-top:4px">Tip: when registering, leave Schedule Date, Facility and Physician blank — set Status to "Pending LOP". Once the LOP is Approved above, this patient moves to "Ready to Schedule".</div>
+    </div>
+
+    <div class="footbar">
+      <button class="fbtn" onclick="go('list')">Cancel</button>
+      <button class="fbtn pri" onclick="saveForm()">${isNew?'Save Referral':'Save Changes'}</button>
+    </div>`;
+  go('form');
+  window.scrollTo(0,0);
+}
+
+function collect(){
+  const p=editing;
+  document.querySelectorAll('#formView [data-k]').forEach(el=>{
+    const k=el.getAttribute('data-k'), v=el.value;
+    ({"First Name":()=>p.first=v,"Last Name":()=>p.last=v,"Date of Birth":()=>p.dob=v,"Patient Phone":()=>p.phone=v,
+      "Patient Email":()=>p.email=v,"DOI / DOL":()=>p.doi=v,"Gender":()=>p.gender=v,"Address":()=>p.address=v,
+      "City":()=>p.city=v,"Zip":()=>p.zip=v,"Payer":()=>p.payer=v,"Lawyer":()=>p.lawyer=v,"Patient ID":()=>p.pid=v,
+      "Order Enter Date":()=>p.orderDate=v,"Referring Doctor":()=>p.doctor=v,"LOP":()=>p.lop=v}[k]||(()=>{}))();
+  });
+  document.querySelectorAll('#formView [data-p]').forEach(el=>{
+    const i=+el.getAttribute('data-p'), pk=el.getAttribute('data-pk');
+    if(p.procs[i]) p.procs[i][pk]=el.value;
+  });
+}
+function addProc(){ collect(); editing.procs.push({exam:EXAMS[0],sched:"",facility:"",status:"Pending LOP",physician:""}); renderForm(editing.id===0); }
+function delProc(i){ collect(); editing.procs.splice(i,1); renderForm(editing.id===0); }
+
+function saveForm(){
+  collect();
+  if(!editing.first.trim()||!editing.last.trim()){ toast("Please enter first and last name"); return; }
+  if(editing.id===0){ editing.id=nextId++; DB.unshift(editing); }
+  else{ const idx=DB.findIndex(p=>p.id===editing.id); DB[idx]=editing; }
+  save();
+  toast(editing.id? "Referral saved to the queue" : "Saved");
+  go('list');
+}
+
+let tT;
+function toast(msg){ const t=document.getElementById("toast"); document.getElementById("toastMsg").textContent=msg; t.classList.add("show"); clearTimeout(tT); tT=setTimeout(()=>t.classList.remove("show"),2600); }
+
+load(); go('list');
+</script>
+</body>
+</html>
