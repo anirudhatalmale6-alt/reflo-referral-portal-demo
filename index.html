@@ -139,6 +139,21 @@
   .toast svg{width:17px;height:17px;color:#5be0a0}
   .hide{display:none!important}
 
+  /* notes */
+  .noteAdd{display:flex;gap:10px;margin-bottom:16px;align-items:flex-start}
+  .noteAdd textarea{flex:1;min-height:44px;border:1px solid var(--line);border-radius:9px;padding:11px 12px;
+    font-size:13.5px;font-family:inherit;background:#fbfcfe;color:var(--ink);resize:vertical}
+  .noteAdd textarea:focus{outline:none;border-color:var(--brand);background:#fff}
+  .note{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .note:last-child{border:none}
+  .note .na{width:30px;height:30px;border-radius:50%;background:var(--slate-soft);color:var(--slate);flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px}
+  .note.sms .na{background:var(--brand-soft);color:var(--brand)}
+  .note .nt{font-size:13px;line-height:1.45}
+  .note.sms .nt{color:var(--slate);font-style:italic}
+  .note .nm{font-size:11.5px;color:var(--muted);margin-top:4px}
+  .smsTag{background:var(--brand-soft);color:var(--brand);border-radius:20px;padding:1px 7px;font-weight:700}
+
   /* dashboard */
   .dashwrap{display:flex;gap:18px;align-items:flex-start}
   .dashside{width:280px;flex-shrink:0}
@@ -303,7 +318,8 @@ function formatSched(v){
 
 const SEED = [
   {id:1, first:"Steward", last:"Joseph", dob:"07/08/1994", phone:"(713) 555-0198", email:"", doi:"07/05/2026", gender:"Male", address:"", city:"Houston", zip:"", payer:"LOP", lawyer:"Jeff Todd, Personal Injury Attorney", pid:"ID08932", orderDate:"08/05/2026", doctor:"Dr. Kiva L. Davis, DC", lop:"Pending",
-    procs:[{exam:"Initial Consultation", sched:"", facility:"", status:"Pending LOP", physician:""}]},
+    procs:[{exam:"Initial Consultation", sched:"", facility:"", status:"Pending LOP", physician:""}],
+    notes:[{text:"Attorney approved two injections — proceed with scheduling once LOP paperwork is in.", author:"Holly T.", ts:"08/05/2026 3:21 PM", type:"note"},{text:'Text sent to (713) 555-0198: "Hi Steward, we received your referral from Dr. Davis and will call you to schedule. Reply C to confirm your number."', author:"System", ts:"08/05/2026 10:06 AM", type:"sms"},{text:"Referral received from Dr. Kiva Davis. Awaiting LOP paperwork from attorney.", author:"Dana M.", ts:"08/05/2026 10:04 AM", type:"note"}]},
   {id:2, first:"David", last:"Tran", dob:"12/08/2000", phone:"(713) 220-8890", email:"", doi:"07/30/2026", gender:"Male", address:"", city:"Houston", zip:"", payer:"LOP", lawyer:"Law Office of Domingo Garcia", pid:"ID08940", orderDate:"08/05/2026", doctor:"Dr. Louie Robinson", lop:"Approved",
     procs:[{exam:"Pain Management Consultation", sched:"", facility:"", status:"Ready to Schedule", physician:""}]},
   {id:3, first:"Aaliyah", last:"Nelson", dob:"06/10/1976", phone:"(346) 512-6677", email:"", doi:"07/22/2026", gender:"Female", address:"", city:"Katy", zip:"", payer:"LOP", lawyer:"J. Jackson Law Office", pid:"ID08951", orderDate:"08/04/2026", doctor:"Dr. Sandeep Patel", lop:"Approved",
@@ -319,7 +335,7 @@ const SEED = [
 ];
 
 let DB=[], filter="all", nextId=100;
-const SEED_VER="6";
+const SEED_VER="7";
 function seed(){ DB=JSON.parse(JSON.stringify(SEED)); nextId=100; localStorage.setItem("reflo_ver",SEED_VER); save(); }
 function load(){ try{ const ver=localStorage.getItem("reflo_ver"); const s=JSON.parse(localStorage.getItem("reflo_db")); if(ver===SEED_VER && s&&s.length){DB=s; nextId=Math.max(...DB.map(p=>p.id))+1; return;} }catch(e){} seed(); }
 function save(){ localStorage.setItem("reflo_db", JSON.stringify(DB)); }
@@ -443,7 +459,7 @@ function opt(arr,val){ return arr.map(o=>`<option ${o===val?'selected':''}>${o}<
 function field(label,val,req){ return `<div class="fld"><label>${label}${req?' <span class="req">*</span>':''}</label><input data-k="${label}" value="${val||''}"></div>`; }
 
 let editing=null;
-function newReferral(){ editing={id:0, first:"",last:"",dob:"",phone:"",email:"",doi:"",gender:"",address:"",city:"",zip:"",payer:"LOP",lawyer:"",pid:"ID"+(10000+Math.floor(nextId)),orderDate:todayStr(),doctor:"",lop:"Pending",procs:[{exam:EXAMS[0],sched:"",facility:"",status:"Pending LOP",physician:""}]}; renderForm(true); }
+function newReferral(){ editing={id:0, first:"",last:"",dob:"",phone:"",email:"",doi:"",gender:"",address:"",city:"",zip:"",payer:"LOP",lawyer:"",pid:"ID"+(10000+Math.floor(nextId)),orderDate:todayStr(),doctor:"",lop:"Pending",procs:[{exam:EXAMS[0],sched:"",facility:"",status:"Pending LOP",physician:""}],notes:[]}; renderForm(true); }
 function openPatient(id){ editing=JSON.parse(JSON.stringify(DB.find(p=>p.id===id))); renderForm(false); }
 function todayStr(){ return "08/05/2026"; }
 
@@ -465,7 +481,7 @@ function renderForm(isNew){
       <div class="pav">${initials(name)}</div>
       <div><h2 id="hName">${name}</h2><div class="pm"><span>DOB ${p.dob||'—'}</span><span>Patient ID: ${p.pid}</span><span>Payer: ${p.payer}</span></div></div>
       <div class="hbtns">
-        <button class="hbtn" onclick="toast('Send SMS — wired up in Phase 3')">Send SMS</button>
+        <button class="hbtn" onclick="sendSmsDemo()">Send SMS</button>
         <button class="hbtn solid" onclick="saveForm()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 6 9 17l-5-5"/></svg> Save</button>
       </div>
     </div>
@@ -503,10 +519,20 @@ function renderForm(isNew){
       <div class="proc-h">
         <h3>Procedures</h3>
         <button class="mini blue" onclick="addProc()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg> Add Procedure</button>
-        <button class="mini ghost" onclick="toast('Send SMS — wired up in Phase 3')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg> Send SMS</button>
+        <button class="mini ghost" onclick="sendSmsDemo()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg> Send SMS</button>
       </div>
       ${procRows}
       <div class="muted" style="font-size:12px;margin-top:4px">Tip: when registering, leave Schedule Date, Facility and Physician blank — set Status to "Pending LOP". Once the LOP is Approved above, this patient moves to "Ready to Schedule".</div>
+    </div>
+
+    <div class="cardbox">
+      <div class="sec-h"><span class="i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H8l-4 4z"/></svg></span> Notes &amp; Communication Log</div>
+      <div class="noteAdd">
+        <textarea id="noteInput" placeholder="Add a note about this patient — e.g., Attorney approved two injections…"></textarea>
+        <button class="mini blue" style="height:44px" onclick="addNote()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg> Add Note</button>
+      </div>
+      <div class="noteList">${noteListHtml(p.notes)}</div>
+      <div class="muted" style="font-size:12px;margin-top:10px">Every text message you send the patient is logged here automatically (try the "Send SMS" button above) — so you always have a full record of communication in one place.</div>
     </div>
 
     <div class="footbar">
@@ -542,6 +568,34 @@ function saveForm(){
   save();
   toast(editing.id? "Referral saved to the queue" : "Saved");
   go('list');
+}
+
+/* ===== NOTES & COMMUNICATION LOG ===== */
+function nowStr(){ const d=new Date(); const mo=String(d.getMonth()+1).padStart(2,'0'),da=String(d.getDate()).padStart(2,'0');
+  let h=d.getHours(); const ap=h>=12?'PM':'AM'; h=h%12; if(h===0)h=12; const mm=String(d.getMinutes()).padStart(2,'0');
+  return `${mo}/${da}/${d.getFullYear()} ${h}:${mm} ${ap}`; }
+function noteListHtml(notes){
+  if(!notes||!notes.length) return `<div class="muted" style="font-size:13px;padding:8px 2px">No notes yet — add the first note above.</div>`;
+  return notes.map(n=>`<div class="note ${n.type==='sms'?'sms':''}">
+    <div class="na">${n.type==='sms'?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5l8.5 6 8.5-6"/></svg>':initials(n.author)}</div>
+    <div style="flex:1;min-width:0"><div class="nt">${n.text}</div><div class="nm">${n.author} · ${n.ts}${n.type==='sms'?' · <span class="smsTag">SMS</span>':''}</div></div>
+  </div>`).join("");
+}
+function persistIfSaved(){ if(editing.id!==0){ const i=DB.findIndex(p=>p.id===editing.id); if(i>=0){ DB[i]=editing; save(); } } }
+function addNote(){
+  const el=document.getElementById('noteInput'); const t=(el.value||'').trim();
+  if(!t){ toast('Type a note first'); return; }
+  collect(); editing.notes=editing.notes||[];
+  editing.notes.unshift({text:t, author:'Dana M.', ts:nowStr(), type:'note'});
+  persistIfSaved(); renderForm(editing.id===0); toast('Note added');
+}
+function sendSmsDemo(){
+  collect(); editing.notes=editing.notes||[];
+  const appt=(editing.procs||[]).find(pr=>pr.sched);
+  const when = appt ? `your appointment on ${formatSched(appt.sched)}${appt.facility?' at our '+appt.facility+' location':''}` : 'your upcoming appointment';
+  const body = `Hi ${editing.first||'there'}, this is a reminder of ${when}. Reply C to confirm.`;
+  editing.notes.unshift({text:`Text sent to ${editing.phone||'patient'}: "${body}"`, author:'System', ts:nowStr(), type:'sms'});
+  persistIfSaved(); renderForm(editing.id===0); toast('SMS sent — logged in Notes below');
 }
 
 let tT;
