@@ -219,15 +219,19 @@
 // Client's full exam catalog, organized into groups for the dropdown.
 const EXAM_GROUPS = [
   ["Consultations & Visits", [
-    "Initial Consultation New Patient",
-    "Pain Management Consultation New Patient",
+    "Initial Consultation",
+    "Pain Management Consultation",
     "Pain Management Consultation Established Patient",
     "Pain Management Consultation Telemedicine",
     "Follow up visit",
     "Follow up visit Telemedicine",
-    "Telemedicine"
+    "Follow up after Injection",
+    "Follow up after Injection Telemedicine",
+    "Follow up after Laser Therapy",
+    "Follow up after Laser Therapy Telemedicine"
   ]],
   ["Injections – Spine", [
+    "Injection",
     "Cervical Interlaminar Epidural Steroid Injection",
     "Cervical Transforaminal Epidural Injection",
     "Cervical Medial Branch Block",
@@ -246,7 +250,8 @@ const EXAM_GROUPS = [
     "Right Ankle Injection","Left Ankle Injection",
     "Right Wrist Injection","Left Wrist Injection",
     "Right Hand Injection","Left Hand Injection",
-    "Right Foot Injection","Left Foot Injection"
+    "Right Foot Injection","Left Foot Injection",
+    "Right SI Joint Injection","Left SI Joint Injection"
   ]],
   ["RFA", [
     "Cervical RFA","Lumbar RFA"
@@ -259,7 +264,11 @@ const EXAM_GROUPS = [
     "MLS Laser Right Shoulder","MLS Laser Left Shoulder",
     "MLS Laser Right Knee","MLS Laser Left Knee",
     "MLS Laser Right Hip","MLS Laser Left Hip",
-    "MLS Laser Right Ankle","MLS Laser Left Ankle"
+    "MLS Laser Right Ankle","MLS Laser Left Ankle",
+    "MLS Laser Right Elbow","MLS Laser Left Elbow",
+    "MLS Laser Right Wrist","MLS Laser Left Wrist",
+    "MLS Laser Right Hand","MLS Laser Left Hand",
+    "MLS Laser Right Foot","MLS Laser Left Foot"
   ]]
 ];
 const EXAMS = EXAM_GROUPS.flatMap(g=>g[1]);
@@ -294,15 +303,15 @@ function formatSched(v){
 
 const SEED = [
   {id:1, first:"Steward", last:"Joseph", dob:"07/08/1994", phone:"(713) 555-0198", email:"", doi:"07/05/2026", gender:"Male", address:"", city:"Houston", zip:"", payer:"LOP", lawyer:"Jeff Todd, Personal Injury Attorney", pid:"ID08932", orderDate:"08/05/2026", doctor:"Dr. Kiva L. Davis, DC", lop:"Pending",
-    procs:[{exam:"Initial Consultation New Patient", sched:"", facility:"", status:"Pending LOP", physician:""}]},
+    procs:[{exam:"Initial Consultation", sched:"", facility:"", status:"Pending LOP", physician:""}]},
   {id:2, first:"David", last:"Tran", dob:"12/08/2000", phone:"(713) 220-8890", email:"", doi:"07/30/2026", gender:"Male", address:"", city:"Houston", zip:"", payer:"LOP", lawyer:"Law Office of Domingo Garcia", pid:"ID08940", orderDate:"08/05/2026", doctor:"Dr. Louie Robinson", lop:"Approved",
-    procs:[{exam:"Pain Management Consultation New Patient", sched:"", facility:"", status:"Ready to Schedule", physician:""}]},
+    procs:[{exam:"Pain Management Consultation", sched:"", facility:"", status:"Ready to Schedule", physician:""}]},
   {id:3, first:"Aaliyah", last:"Nelson", dob:"06/10/1976", phone:"(346) 512-6677", email:"", doi:"07/22/2026", gender:"Female", address:"", city:"Katy", zip:"", payer:"LOP", lawyer:"J. Jackson Law Office", pid:"ID08951", orderDate:"08/04/2026", doctor:"Dr. Sandeep Patel", lop:"Approved",
     procs:[{exam:"MLS Laser Lumbar Spine", sched:"2026-08-12T13:00", facility:"Missouri City", status:"Scheduled", physician:"Dr. Raju Mantena, DO"}]},
   {id:4, first:"Michael", last:"Brooks", dob:"10/22/1991", phone:"(281) 330-7712", email:"", doi:"07/19/2026", gender:"Male", address:"", city:"Houston", zip:"", payer:"Insurance", lawyer:"", pid:"ID08960", orderDate:"08/04/2026", doctor:"Dr. Sandeep Patel", lop:"Pending",
-    procs:[{exam:"Pain Management Consultation New Patient", sched:"", facility:"", status:"Pending LOP", physician:""}]},
+    procs:[{exam:"Pain Management Consultation", sched:"", facility:"", status:"Pending LOP", physician:""}]},
   {id:5, first:"Marcus", last:"Whitfield", dob:"03/12/1986", phone:"(713) 445-1180", email:"", doi:"07/15/2026", gender:"Male", address:"", city:"Houston", zip:"", payer:"LOP", lawyer:"Edward Law Group", pid:"ID08971", orderDate:"08/01/2026", doctor:"Dr. Gilbert Sharon, DC", lop:"Approved",
-    procs:[{exam:"Pain Management Consultation New Patient", sched:"2026-08-06T09:00", facility:"Southwest", status:"Scheduled", physician:"Dr. Sachin Shah, MD"}]},
+    procs:[{exam:"Pain Management Consultation", sched:"2026-08-06T09:00", facility:"Southwest", status:"Scheduled", physician:"Dr. Sachin Shah, MD"}]},
   {id:6, first:"Priya", last:"Nair", dob:"11/02/1994", phone:"(281) 220-7734", email:"", doi:"07/11/2026", gender:"Female", address:"", city:"Katy", zip:"", payer:"LOP", lawyer:"Haque Law", pid:"ID08972", orderDate:"08/01/2026", doctor:"Dr. Louie Robinson", lop:"Approved",
     procs:[{exam:"Right Knee Injection", sched:"2026-08-06T10:30", facility:"Heights", status:"Scheduled", physician:"Dr. Rizwan Khan, DO"}]},
   {id:7, first:"Devonte", last:"Harris", dob:"06/19/1978", phone:"(346) 771-0043", email:"", doi:"07/09/2026", gender:"Male", address:"", city:"Houston", zip:"", payer:"LOP", lawyer:"Jeff Todd, Personal Injury Attorney", pid:"ID08973", orderDate:"07/31/2026", doctor:"Dr. Kiva L. Davis, DC", lop:"Approved",
@@ -310,7 +319,7 @@ const SEED = [
 ];
 
 let DB=[], filter="all", nextId=100;
-const SEED_VER="5";
+const SEED_VER="6";
 function seed(){ DB=JSON.parse(JSON.stringify(SEED)); nextId=100; localStorage.setItem("reflo_ver",SEED_VER); save(); }
 function load(){ try{ const ver=localStorage.getItem("reflo_ver"); const s=JSON.parse(localStorage.getItem("reflo_db")); if(ver===SEED_VER && s&&s.length){DB=s; nextId=Math.max(...DB.map(p=>p.id))+1; return;} }catch(e){} seed(); }
 function save(){ localStorage.setItem("reflo_db", JSON.stringify(DB)); }
