@@ -216,8 +216,56 @@
 <div class="toast" id="toast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span id="toastMsg"></span></div>
 
 <script>
-// Consult/visit exams confirmed by client. Injections + MLS to be added when he sends them.
-const EXAMS = ["Initial Consultation New Patient","Pain Management Consultation New Patient","Follow up visit","Telemedicine","Follow up visit Telemedicine"];
+// Client's full exam catalog, organized into groups for the dropdown.
+const EXAM_GROUPS = [
+  ["Consultations & Visits", [
+    "Initial Consultation New Patient",
+    "Pain Management Consultation New Patient",
+    "Pain Management Consultation Established Patient",
+    "Pain Management Consultation Telemedicine",
+    "Follow up visit",
+    "Follow up visit Telemedicine",
+    "Telemedicine"
+  ]],
+  ["Injections – Spine", [
+    "Cervical Interlaminar Epidural Steroid Injection",
+    "Cervical Transforaminal Epidural Injection",
+    "Cervical Medial Branch Block",
+    "Thoracic Interlaminar Epidural Steroid Injection",
+    "Thoracic Transforaminal Epidural Injection",
+    "Thoracic Medial Branch Block",
+    "Lumbar Interlaminar Epidural Steroid Injection",
+    "Lumbar Transforaminal Epidural Injection",
+    "Lumbar Medial Branch Block"
+  ]],
+  ["Injections – Major Joints (R/L)", [
+    "Right Shoulder Injection","Left Shoulder Injection",
+    "Right Knee Injection","Left Knee Injection",
+    "Right Hip Injection","Left Hip Injection",
+    "Right Elbow Injection","Left Elbow Injection",
+    "Right Ankle Injection","Left Ankle Injection",
+    "Right Wrist Injection","Left Wrist Injection",
+    "Right Hand Injection","Left Hand Injection",
+    "Right Foot Injection","Left Foot Injection"
+  ]],
+  ["RFA", [
+    "Cervical RFA","Lumbar RFA"
+  ]],
+  ["MLS Laser", [
+    "MLS Laser",
+    "MLS Laser Cervical Spine",
+    "MLS Laser Thoracic Spine",
+    "MLS Laser Lumbar Spine",
+    "MLS Laser Right Shoulder","MLS Laser Left Shoulder",
+    "MLS Laser Right Knee","MLS Laser Left Knee",
+    "MLS Laser Right Hip","MLS Laser Left Hip",
+    "MLS Laser Right Ankle","MLS Laser Left Ankle"
+  ]]
+];
+const EXAMS = EXAM_GROUPS.flatMap(g=>g[1]);
+function examOptions(val){
+  return EXAM_GROUPS.map(([label,items])=>`<optgroup label="${label}">`+items.map(o=>`<option ${o===val?'selected':''}>${o}</option>`).join("")+`</optgroup>`).join("");
+}
 const STATUSES = ["Pending LOP","Pending LOP Injection","Pending LOP MLS","Ready to Schedule","Scheduled","Check Out","Completed","No Show","Canceled","Dropped","Follow up MRI","Reduction Received","Settled"];
 const PHYSICIANS = ["Dr. Sachin Shah, MD","Dr. Rizwan Khan, DO","Dr. Raju Mantena, DO","Princess Ezenwa, FNP","Maria Mapa Martin, APRN","Viking Physician","Ancy Varghese, FNP"];
 const FACILITIES = ["Telemedicine","Humble","Jersey Village","Pasadena","Southwest","North 45","Heights","Sugarland","Missouri City","Viking SC","Altus Westchase-SC","MLS Mo City"];
@@ -250,19 +298,19 @@ const SEED = [
   {id:2, first:"David", last:"Tran", dob:"12/08/2000", phone:"(713) 220-8890", email:"", doi:"07/30/2026", gender:"Male", address:"", city:"Houston", zip:"", payer:"LOP", lawyer:"Law Office of Domingo Garcia", pid:"ID08940", orderDate:"08/05/2026", doctor:"Dr. Louie Robinson", lop:"Approved",
     procs:[{exam:"Pain Management Consultation New Patient", sched:"", facility:"", status:"Ready to Schedule", physician:""}]},
   {id:3, first:"Aaliyah", last:"Nelson", dob:"06/10/1976", phone:"(346) 512-6677", email:"", doi:"07/22/2026", gender:"Female", address:"", city:"Katy", zip:"", payer:"LOP", lawyer:"J. Jackson Law Office", pid:"ID08951", orderDate:"08/04/2026", doctor:"Dr. Sandeep Patel", lop:"Approved",
-    procs:[{exam:"Follow up visit", sched:"2026-08-12T13:00", facility:"Missouri City", status:"Scheduled", physician:"Dr. Raju Mantena, DO"}]},
+    procs:[{exam:"MLS Laser Lumbar Spine", sched:"2026-08-12T13:00", facility:"Missouri City", status:"Scheduled", physician:"Dr. Raju Mantena, DO"}]},
   {id:4, first:"Michael", last:"Brooks", dob:"10/22/1991", phone:"(281) 330-7712", email:"", doi:"07/19/2026", gender:"Male", address:"", city:"Houston", zip:"", payer:"Insurance", lawyer:"", pid:"ID08960", orderDate:"08/04/2026", doctor:"Dr. Sandeep Patel", lop:"Pending",
     procs:[{exam:"Pain Management Consultation New Patient", sched:"", facility:"", status:"Pending LOP", physician:""}]},
   {id:5, first:"Marcus", last:"Whitfield", dob:"03/12/1986", phone:"(713) 445-1180", email:"", doi:"07/15/2026", gender:"Male", address:"", city:"Houston", zip:"", payer:"LOP", lawyer:"Edward Law Group", pid:"ID08971", orderDate:"08/01/2026", doctor:"Dr. Gilbert Sharon, DC", lop:"Approved",
     procs:[{exam:"Pain Management Consultation New Patient", sched:"2026-08-06T09:00", facility:"Southwest", status:"Scheduled", physician:"Dr. Sachin Shah, MD"}]},
   {id:6, first:"Priya", last:"Nair", dob:"11/02/1994", phone:"(281) 220-7734", email:"", doi:"07/11/2026", gender:"Female", address:"", city:"Katy", zip:"", payer:"LOP", lawyer:"Haque Law", pid:"ID08972", orderDate:"08/01/2026", doctor:"Dr. Louie Robinson", lop:"Approved",
-    procs:[{exam:"Follow up visit", sched:"2026-08-06T10:30", facility:"Heights", status:"Scheduled", physician:"Dr. Rizwan Khan, DO"}]},
+    procs:[{exam:"Right Knee Injection", sched:"2026-08-06T10:30", facility:"Heights", status:"Scheduled", physician:"Dr. Rizwan Khan, DO"}]},
   {id:7, first:"Devonte", last:"Harris", dob:"06/19/1978", phone:"(346) 771-0043", email:"", doi:"07/09/2026", gender:"Male", address:"", city:"Houston", zip:"", payer:"LOP", lawyer:"Jeff Todd, Personal Injury Attorney", pid:"ID08973", orderDate:"07/31/2026", doctor:"Dr. Kiva L. Davis, DC", lop:"Approved",
-    procs:[{exam:"Follow up visit Telemedicine", sched:"2026-08-06T13:00", facility:"Humble", status:"Scheduled", physician:"Dr. Sachin Shah, MD"}]}
+    procs:[{exam:"Lumbar RFA", sched:"2026-08-06T13:00", facility:"Humble", status:"Scheduled", physician:"Dr. Sachin Shah, MD"}]}
 ];
 
 let DB=[], filter="all", nextId=100;
-const SEED_VER="4";
+const SEED_VER="5";
 function seed(){ DB=JSON.parse(JSON.stringify(SEED)); nextId=100; localStorage.setItem("reflo_ver",SEED_VER); save(); }
 function load(){ try{ const ver=localStorage.getItem("reflo_ver"); const s=JSON.parse(localStorage.getItem("reflo_db")); if(ver===SEED_VER && s&&s.length){DB=s; nextId=Math.max(...DB.map(p=>p.id))+1; return;} }catch(e){} seed(); }
 function save(){ localStorage.setItem("reflo_db", JSON.stringify(DB)); }
@@ -394,7 +442,7 @@ function renderForm(isNew){
   const p=editing, name=(p.first||p.last)?(p.first+" "+p.last).trim():"New Referral";
   const procRows = p.procs.map((pr,i)=>`
     <div class="proc-row">
-      <div class="fld"><label>Exam</label><select data-p="${i}" data-pk="exam">${opt(EXAMS,pr.exam)}</select></div>
+      <div class="fld"><label>Exam</label><select data-p="${i}" data-pk="exam">${examOptions(pr.exam)}</select></div>
       <div class="fld"><label>Schedule Date</label><input type="datetime-local" data-p="${i}" data-pk="sched" value="${pr.sched||''}"></div>
       <div class="fld"><label>Facility</label><select data-p="${i}" data-pk="facility"><option value="">Select…</option>${opt(FACILITIES,pr.facility)}</select></div>
       <div class="fld"><label>Status</label><select data-p="${i}" data-pk="status">${opt(STATUSES,pr.status)}</select></div>
