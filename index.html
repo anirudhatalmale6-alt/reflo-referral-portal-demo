@@ -266,7 +266,7 @@ const EXAM_GROUPS = [
     "Right Wrist Injection","Left Wrist Injection",
     "Right Hand Injection","Left Hand Injection",
     "Right Foot Injection","Left Foot Injection",
-    "Right SI Joint Injection","Left SI Joint Injection"
+    "SI Joint Injection"
   ]],
   ["RFA", [
     "Cervical RFA","Lumbar RFA"
@@ -335,7 +335,7 @@ const SEED = [
 ];
 
 let DB=[], filter="all", nextId=100;
-const SEED_VER="7";
+const SEED_VER="8";
 function seed(){ DB=JSON.parse(JSON.stringify(SEED)); nextId=100; localStorage.setItem("reflo_ver",SEED_VER); save(); }
 function load(){ try{ const ver=localStorage.getItem("reflo_ver"); const s=JSON.parse(localStorage.getItem("reflo_db")); if(ver===SEED_VER && s&&s.length){DB=s; nextId=Math.max(...DB.map(p=>p.id))+1; return;} }catch(e){} seed(); }
 function save(){ localStorage.setItem("reflo_db", JSON.stringify(DB)); }
